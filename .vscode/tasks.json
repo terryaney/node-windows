@@ -1,0 +1,59 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "pack node-windows",
+			"dependsOn": [
+				"pack node-windows - npm",
+				"pack node-windows - delete",
+				"pack node-windows - rename"
+			],
+			"dependsOrder": "sequence",
+			"problemMatcher": []
+		},
+		{
+			"label": "pack node-windows - npm",
+			"hide": true,
+			"type": "shell",
+			"command": "npm",
+			"args": [
+				"pack"
+			],
+			"presentation": {
+				"clear": false,
+				"showReuseMessage": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "pack node-windows - delete",
+			"hide": true,
+			"type": "shell",
+			"command": "cmd",
+			"args": [
+				"/c",
+				"if exist node-windows.tgz del node-windows.tgz"
+			],
+			"presentation": {
+				"clear": false,
+				"showReuseMessage": false
+			},
+			"problemMatcher": []
+		},
+		{
+			"label": "pack node-windows - rename",
+			"hide": true,
+			"type": "shell",
+			"command": "cmd",
+			"args": [
+				"/c",
+				"ren node-windows-1.0.0-beta.8.tgz node-windows.tgz"
+			],
+			"presentation": {
+				"clear": false,
+				"showReuseMessage": false
+			},
+			"problemMatcher": []
+		}
+	]
+}
