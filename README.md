@@ -1,39 +1,19 @@
-# node-windows
+# Reasons for this Fork
 
-![NPM version](https://img.shields.io/npm/v/node-windows?label=node-windows&logo=npm&style=for-the-badge)
-![NGN Dependencies](https://img.shields.io/librariesio/release/npm/node-windows?style=for-the-badge)
+This fork was created mainly to fix some critical bugs in the interim while waiting for Corey's [major rewrite](https://github.com/coreybutler/node-windows/discussions/317) to be completed; most notably the service process restart feature did not work at all (central to the premise of this module!), and also to add some urgently needed features. The main new features added are:
+
+- WinSw updated to version 2.12
+	- [Issue 47](https://github.com/coreybutler/node-windows/issues/47) - talks about need .NET 2.0 or .NET 3.5 or upgrading WinSw.exe.
+	- [Issue 338](https://github.com/coreybutler/node-windows/issues/338) - As discussed here, I used the [WinSw.NET461.exe](https://github.com/WinSw/WinSw/releases/tag/v2.12.0) version of the application.
+- Windows services now work properly under .NET runtime 4.0+ (aka newer versions of windows.)
+- PRs Implmented/Merged Here
+	- [PR 268](https://github.com/coreybutler/node-windows/pull/268) - Update for WinSw.exe.  Also mentions "We're now building WinSw 3, and it's surprising to see this project is still using WinSw 1. A large number of issues in this repo have been resolved in the upstream."  Might need to readdress this and upgrade WinSw.exe again to 3.x.
+
+# node-windows
 
  This library can be used to install/start/stop/uninstall Node scripts as Windows background services for **production** environments. This is not a tool for developing applications, it is a tool for releasing them. This tool generates an executable that will run your app with whichever version of Node.js is installed on the computer.
 
-  See [node-mac](http://github.com/coreybutler/node-mac) and [node-linux](http://github.com/coreybutler/node-linux) if you need to support those operating systems.
-    
-[Tweet me (@goldglovecb)](http://twitter.com/goldglovecb) if you need me.
-
-## Sponsors
-<br/>
-<div>
-  <table cellpadding="5" cellspacing="0" border="0">
-    <tr>
-      <td><a href="https://metadoc.io"><img src="https://github.com/coreybutler/staticassets/raw/master/sponsors/metadoclogobig.png" width="200px"/></a></td>
-      <td><a href="https://enabledb.com"><img src="https://github.com/coreybutler/staticassets/raw/master/images/logos/logo_enabledb_w_text.png" width="200px"/></a></td>
-      <td><a href="https://butlerlogic.com"><img src="https://github.com/coreybutler/staticassets/raw/master/sponsors/butlerlogic_logo.png" width="200px"/></a></td>
-      <td width="25%" align="center"><a href="https://github.com/microsoft"><img src="https://user-images.githubusercontent.com/770982/195955265-5c3dca78-7140-4ec6-b05a-f308518643ee.png" height="30px"/></a></td>
-    </tr>
-    <tr>
-      <td colspan="4" align="center">
-        <a href="https://github.com/sponsors/coreybutler"><img src="https://img.shields.io/github/sponsors/coreybutler?label=Individual%20Sponsors&logo=github&style=social"/></a>
-        &nbsp;<a href="https://github.com/sponsors/coreybutler"><img src="https://img.shields.io/badge/-Become%20a%20Sponsor-yellow"/></a>
-      </td>
-    </tr>
-    <tr>
-      <td colspan="4" align="center">
-        <img src="https://github.blog/wp-content/uploads/2020/09/github-stars-logo_Color.png" width="50"/><br/>
-        <b>Can't sponsor?</b><br/>Consider <a href="https://stars.github.com/nominate/" target="_blank">nominating @coreybutler for a Github star</a>.
-      </td>
-    </tr>
-  </table>
-</div>
-<br/>
+  See [node-mac](http://github.com/coreybutler/node-mac) and [node-linux](http://github.com/coreybutler/node-linux) if you need to support those operating systems.    
 
 ## Overview
 
@@ -224,7 +204,7 @@ Both the account and password must be explicitly defined if you want the service
 run commands as a specific user. By default, it will run using the user account that launched
 the process (i.e. who launched `node app.js`).
 
-If you want to instruct winsw to allow service account logins, specify `allowServiceLogon: true`. This is disabled by default since some users have experienced issues running this without service logons.
+If you want to instruct WinSw to allow service account logins, specify `allowServiceLogon: true`. This is disabled by default since some users have experienced issues running this without service logons.
 
 The other attribute is `sudo`. This attribute has a single property called `password`. By supplying
 this, the service module will attempt to run commands using the user account that launched the
@@ -243,6 +223,24 @@ var svc = new Service({
 
 svc.sudo.password = 'password';
 ...
+```
+
+### Service working directory
+
+By default, the working directory that the service will run under will be set to the same working directory that the install process is running under when the service is installed. To override this and set the service working directory explicitly, use the `workingdirectory` setting.  For example:
+
+```js
+var Service = require('node-windows').Service;
+
+// Create a new service object
+var svc = new Service({
+  name:'Hello World',
+  script: require('path').join(__dirname,'helloworld.js'),
+  workingdirectory = "C:\\my\\explicitly\\defined\\directory\\"
+});
+
+// Install the service.
+svc.install();
 ```
 
 ### Depending on other services
@@ -333,10 +331,10 @@ at all when it exits with an error.
 
 ### How Services Are Made
 
-node-windows uses the [winsw](https://github.com/kohsuke/winsw) utility to create a unique `.exe`
+node-windows uses the [WinSw](https://github.com/kohsuke/winsw) utility to create a unique `.exe`
 for each Node.js script deployed as a service. A directory called `daemon` is created and populated
 with `myappname.exe` and `myappname.xml`. The XML file is a configuration for the executable. Additionally,
-`winsw` will create some logs for itself in this directory (which are viewable in the Event log).
+`WinSw` will create some logs for itself in this directory (which are viewable in the Event log).
 
 The `myappname.exe` file launches the node-windows wrapper, which is responsible for monitoring and managing
 the script. Since this file is a part of node-windows, moving the node-windows directory could result in
@@ -560,7 +558,7 @@ Special thanks to @arthurblake whose modifications have FINALLY been added. Than
 
 # Licenses
 
-winsw and sudowin are the copyrights of their respective owners. winsw
+WinSw and sudowin are the copyrights of their respective owners. WinSw
 is distributed under an MIT license. sudowin is distributed under a BSD license.
 
 All other scripts are Copyright (c) Corey Butler under an MIT license.
